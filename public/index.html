@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>صيّاد الأسعار — Price Hunter Egypt | مقارنة أسعار 11 متجر مصري</title>
+<meta name="description" content="ابحث عن أي منتج — نقارنلك الأسعار في 11 متجر مصري ونطلعلك تقرير مرتب بأرخص عرض. Price Hunter Egypt">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='80'>🎯</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="logo">
+        <span class="logo-icon">🎯</span>
+        <div class="logo-text">
+          <strong data-i18n="brand_ar">صيّاد الأسعار</strong>
+          <span data-i18n="brand_en">Price Hunter Egypt</span>
+        </div>
+      </div>
+      <button id="langToggle" class="lang-toggle" aria-label="Toggle language">
+        <span class="lang-opt active" data-lang="ar">عربي</span>
+        <span class="lang-opt" data-lang="en">EN</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="container hero-inner">
+      <h1 class="hero-title"><span class="target">🎯</span> <span data-i18n="hero_title">صيّاد الأسعار</span></h1>
+      <p class="hero-sub" data-i18n="hero_sub">ابحث عن أي منتج — نقارنلك الأسعار في 11 متجر مصري ونطلعلك تقرير مرتب بأرخص عرض</p>
+      
+      <div class="stores-row" id="storesRow"></div>
+
+      <div class="search-wrap">
+        <input id="searchInput" type="text" placeholder="اكتب اسم المنتج ... مثال: سماعات ساوندكور R50i" autocomplete="off">
+        <button id="searchBtn" class="search-btn"><span class="icon">🔍</span> <span data-i18n="search_btn">ابحث</span></button>
+      </div>
+
+      <div class="cats-row" id="catsRow"></div>
+    </div>
+  </section>
+
+  <!-- Report Section -->
+  <main id="reportSection" class="report-section hidden">
+    <div class="container">
+      <div class="report-head">
+        <h2 id="reportTitle">تقرير أسعار: <span id="reportQueryText"></span></h2>
+        <p id="reportMeta">Price Hunter — 29/10/2026</p>
+      </div>
+
+      <!-- Banner -->
+      <div id="banner" class="banner live">
+        <span id="bannerText">✅ نتائج حية من 3 متجر — استغرق البحث 8.2 ثانية</span>
+      </div>
+      <div id="demoBanner" class="banner demo hidden">
+        <span>📅 الأسعار اللي تحت من رصد أكتوبر 2026 — التحديث المباشر من المتاجر مُعطّل مؤقتاً.</span>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card best">
+          <div class="stat-label">🏆 <span data-i18n="best_price">أقل سعر</span></div>
+          <div class="stat-value" id="statBest">1,449 ج.م</div>
+          <div class="stat-sub" id="statBestStore">اتصال ستور</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">📊 <span data-i18n="avg_price">متوسط السعر</span></div>
+          <div class="stat-value" id="statAvg">4,997 ج.م</div>
+          <div class="stat-sub"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">📦 <span data-i18n="offers">عدد العروض</span></div>
+          <div class="stat-value" id="statCount">27</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">🏪 <span data-i18n="stores_hit">متاجر فيها نتائج</span></div>
+          <div class="stat-value" id="statStores">3</div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters" id="filters"></div>
+
+      <!-- Action Bar -->
+      <div class="action-bar">
+        <button class="action-btn primary" id="btnCheapest">🪁 <span data-i18n="cheapest_first">الأرخص أولاً</span></button>
+        <button class="action-btn" id="btnDiscount">🔥 <span data-i18n="biggest_discount">أعلى خصم</span></button>
+        <button class="action-btn" id="btnAlpha">🔤 <span data-i18n="alpha">أبجدي</span></button>
+        <button class="action-btn" id="btnCopy">📋 <span data-i18n="copy_report">نسخ التقرير</span></button>
+        <button class="action-btn" id="btnPrint">🖨️ <span data-i18n="print_pdf">طباعة / PDF</span></button>
+      </div>
+
+      <!-- Product List -->
+      <div id="productList" class="product-list"></div>
+
+      <!-- Store Status -->
+      <div class="store-status" id="storeStatus">
+        <button class="collapse-btn" id="collapseBtn">▼ <span data-i18n="store_status">حالة المتاجر (اضغط للتفاصيل)</span></button>
+        <div class="status-grid hidden" id="statusGrid"></div>
+      </div>
+
+      <!-- AI Export -->
+      <div class="ai-box">
+        <h3>🤖 <span data-i18n="ai_title">اسأل أدوات الذكاء الاصطناعي</span></h3>
+        <p data-i18n="ai_desc">انسخ نفس السؤال في Gemini أو ChatGPT أو Claude لمقارنة الآراء مع رأينا</p>
+        <div class="ai-actions">
+          <button class="ai-btn" data-ai="gemini">✨ Gemini</button>
+          <button class="ai-btn" data-ai="chatgpt">💬 ChatGPT</button>
+          <button class="ai-btn" data-ai="claude">🧠 Claude</button>
+          <button class="ai-btn copy" id="btnCopyAI">📋 <span data-i18n="copy_q">نسخ السؤال</span></button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Loading -->
+  <div id="loading" class="loading hidden">
+    <div class="spinner"></div>
+    <p data-i18n="loading">جاري البحث في 11 متجر ... ⏳</p>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>🎯 صيّاد الأسعار — Price Hunter Egypt</strong>
+      </div>
+      <p class="footer-note" data-i18n="footer_1">الأسعار لحظة البحث وقد تتغير — تأكد من السعر النهائي في صفحة المتجر قبل الشراء</p>
+      <p class="footer-note" data-i18n="footer_2">دوس على أي عرض في النتائج وهتفتحلك صفحة المنتج نفسها على المتجر مباشرة.</p>
+      <p class="footer-copy">«صيّاد الأسعار» علامة تجارية ™ — جميع الحقوق محفوظة<br><b>Tarek Abozald — All Rights Reserved 2026 ©</b></p>
+    </div>
+  </footer>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+<script src="./app.js"></script>
+</body>
+</html>
