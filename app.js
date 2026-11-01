@@ -2,7 +2,7 @@ const STORES = [
   {id:'jumia', ar:'جوميا', en:'Jumia', color:'#FF6B00', domain:'jumia.com.eg'},
   {id:'noon', ar:'نون', en:'Noon', color:'#FDE047', domain:'noon.com'},
   {id:'amazon', ar:'أمازون مصر', en:'Amazon Egypt', color:'#F59E0B', domain:'amazon.eg'},
-  {id:'vontx', ar:'فونكس', en:'Vontx', color:'#2DD4BF', domain:'vontxshop.com'},
+  {id:'vontx', ar:'فونكس', en:'Vontx', color:'#2DD4BF', domain:'vontx.com'},
   {id:'dream2000', ar:'دريم 2000', en:'Dream 2000', color:'#EF4444', domain:'dream2000.com'},
   {id:'b2', ar:'2B', en:'2B', color:'#FACC15', domain:'2b.com.eg'},
   {id:'etisal', ar:'اتصال ستور', en:'Etisal Store', color:'#10B981', domain:'etisalstore.com'},
