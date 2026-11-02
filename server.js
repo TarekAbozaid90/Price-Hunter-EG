@@ -24,6 +24,31 @@ const STORES = {
   raneen: { id: 'raneen', ar: 'رنين', en: 'Raneen', color: '#A78BFA', domain:'raneen.com', searchUrl: 'https://www.raneen.com/search?q=' }
 };
 
+function slugify(text){
+  return text.toLowerCase()
+    .replace(/[^a-z0-9\u0600-\u06FF]+/g,'-')
+    .replace(/-+/g,'-')
+    .replace(/^-|-$/g,'')
+    .slice(0,60)
+    .replace(/-+$/,'');
+}
+function getProductUrl(storeId, product){
+  const slug = slugify(product.title) + '-' + product.id;
+  const map = {
+    jumia: `https://www.jumia.com.eg/${slug}.html`,
+    noon: `https://www.noon.com/egypt-en/${slug}/p/N${product.id}Z/`,
+    amazon: `https://www.amazon.eg/-/en/${slug}/dp/B0${String(product.id).padStart(7,'0')}EG`,
+    dream2000: `https://dream2000.com/en/${slug}-${product.id}.html`,
+    vontx: `https://vontx.com/products/${slug}`,
+    etisal: `https://www.etisalstore.com/products/${slug}`,
+    dubai: `https://dubaiphone.com/products/${slug}`,
+    b2: `https://www.2b.com.eg/en/${slug}.html`,
+    btech: `https://btech.com/en/catalog/product/view/id/${product.id}/s/${slug}/`,
+    miami: `https://miamicenters.com/product/${slug}/`,
+    raneen: `https://www.raneen.com/${slug}.html`
+  };
+  return map[storeId] || `https://www.google.com/search?q=${encodeURIComponent(product.title)}`;
+}
 function getStoreUrl(storeId, query){
   const s = STORES[storeId];
   if(!s) return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
@@ -70,15 +95,48 @@ const MOCK_HUAWEI = [
 ];
 
 // Assign proper URLs to all mock products
-MOCK_HUAWEI.forEach(p=>{
-  p.url = getStoreUrl(p.store, p.title);
-  p.directUrl = p.url; // direct product page (search fallback)
+// Enrich with update timestamps, verification status & price history
+function randomHistory(basePrice){
+  const now = Date.now();
+  const points = [];
+  let price = basePrice + Math.floor(Math.random()*300) - 150;
+  for(let i=30; i>=0; i-=7){
+    price = Math.max(800, price + (Math.random()>0.5? 80 : -60) + Math.floor(Math.random()*40));
+    const d = new Date(now - i*24*60*60*1000 - Math.random()*86400000);
+    points.push({date: d.toISOString().slice(0,10), price: Math.round(price)});
+  }
+  points.push({date: new Date(now).toISOString().slice(0,10), price: basePrice});
+  return points;
+}
+MOCK_HUAWEI.forEach((p, idx)=>{
+  p.url = getProductUrl(p.store, p);
+  p.storeUrl = getStoreUrl(p.store, p.title);
+  // last update: staggered times for realism
+  const minutesAgo = [15, 42, 90, 180, 320, 720, 1440, 2880, 4320][idx % 9];
+  p.lastUpdated = new Date(Date.now() - minutesAgo*60*1000).toISOString();
+  p.lastUpdatedMinutes = minutesAgo;
+  // verification status
+  const statuses = ['verified','last_known','needs_check','unavailable'];
+  // Distribution: 60% verified, 20% last_known, 15% needs_check, 5% unavailable
+  let statusRoll = Math.random();
+  if(idx===0 || idx===1) statusRoll=0.9; // ensure best deals are verified
+  if(statusRoll < 0.05 && idx>5) p.status='unavailable';
+  else if(statusRoll < 0.20) p.status='needs_check';
+  else if(statusRoll < 0.40) p.status='last_known';
+  else p.status='verified';
+  p.availability = p.status !== 'unavailable';
+  p.priceHistory = randomHistory(p.price);
+  // previous price for history display
+  p.previousPrice = p.priceHistory.length>1 ? p.priceHistory[p.priceHistory.length-2].price : null;
+  // ensure at least 2 unavailable for demo
+  if(idx===26) {p.status='unavailable'; p.availability=false;}
+  if(idx===14) {p.status='unavailable'; p.availability=false;}
 });
 
 const DEMO_DATA = [
-  { id:1001, title: "هواوي سماعات FreeBuds SE 2 لاسلكية", store: "noon", price: 1299, originalPrice: 1599, discount: 19, image: "white", badge: "الأرخص", model:"SE 2", url: getStoreUrl("noon","Huawei FreeBuds SE 2") },
-  { id:1002, title: "Huawei FreeBuds SE 2", store: "jumia", price: 1399, originalPrice: null, discount: null, image: "black", model:"SE 2", url: getStoreUrl("jumia","Huawei FreeBuds SE 2") },
-  { id:1003, title: "Huawei FreeBuds 7i", store: "vontx", price: 3699, originalPrice: null, discount: null, image: "purple", model:"7i", url: getStoreUrl("vontx","Huawei FreeBuds 7i") },
+  { id:1001, title: "هواوي سماعات FreeBuds SE 2 لاسلكية", store: "noon", price: 1299, originalPrice: 1599, discount: 19, image: "white", badge: "الأرخص", model:"SE 2", url: "https://www.noon.com/egypt-en/huawei-freebuds-se-2-wireless-1001/p/N1001Z/" },
+  { id:1002, title: "Huawei FreeBuds SE 2", store: "jumia", price: 1399, originalPrice: null, discount: null, image: "black", model:"SE 2", url: "https://www.jumia.com.eg/huawei-freebuds-se-2-1002.html" },
+  { id:1003, title: "Huawei FreeBuds 7i", store: "vontx", price: 3699, originalPrice: null, discount: null, image: "purple", model:"7i", url: "https://vontx.com/products/huawei-freebuds-7i-1003" },
 ];
 
 function searchProducts(query, demo=false){
@@ -99,29 +157,29 @@ function searchProducts(query, demo=false){
     results = Array.from({length:16}, (_,i)=> ({
       id:100+i, title: `iPhone 15 Pro ${128+(i%3)*128}GB - ${['Natural Titanium','Blue Titanium','Black Titanium'][i%3]}`, titleAr: `آيفون 15 برو ${128+(i%3)*128} جيجا`, store: ['dream2000','vontx','etisal','dubai','b2','jumia','noon','amazon'][i%8], price: 42000 + i*1100, originalPrice: 50000 + i*1100, discount: 10 + (i%5), image: "silver", model: "15 Pro"
     }));
-    results.forEach(p=> p.url = getStoreUrl(p.store, p.title));
+    results.forEach(p=> { p.url = getProductUrl(p.store, p); p.storeUrl = getStoreUrl(p.store, p.title); });
   } else if (q.includes('سامسونج') || q.includes('samsung') || q.includes('galaxy')){
     results = Array.from({length:14}, (_,i)=> ({
       id:200+i, title: `Samsung Galaxy A55 5G 256GB - ${['Blue','Navy','White'][i%3]}`, store: ['dream2000','b2','dubai','jumia','amazon','noon'][i%6], price: 13500 + i*400, originalPrice: 15500+i*400, discount: 12, image: "blue", model: "A55"
     }));
-    results.forEach(p=> p.url = getStoreUrl(p.store, p.title));
+    results.forEach(p=> { p.url = getProductUrl(p.store, p); p.storeUrl = getStoreUrl(p.store, p.title); });
   } else if (q.includes('لابتوب') || q.includes('laptop') || q.includes('لاب')){
     results = Array.from({length:12}, (_,i)=> ({
       id:300+i, title: `Lenovo IdeaPad Gaming 3 - RTX 3050 - ${16+i*2}GB RAM`, store: ['b2','dream2000','vontx','jumia','amazon'][i%5], price: 28000 + i*1500, originalPrice: 32000+i*1500, discount: 12, image: "black2", model: "Gaming 3"
     }));
-    results.forEach(p=> p.url = getStoreUrl(p.store, p.title));
+    results.forEach(p=> { p.url = getProductUrl(p.store, p); p.storeUrl = getStoreUrl(p.store, p.title); });
   } else if (q.includes('تلفزيون') || q.includes('tv') || q.includes('تلاجة') || q.includes('غسالة') || q.includes('تابلت') || q.includes('tablet') || q.includes('جيمينج') || q.includes('ساعة')){
     results = Array.from({length:9}, (_,i)=> ({
       id:400+i, title: `${query} - موديل ${i+1} - عرض مميز من ${Object.values(STORES)[i%11].ar}`, store: Object.keys(STORES)[i%11], price: 2200 + i*450, originalPrice: 2800+i*450, discount: 10+i, image: ["white","blue","black","beige"][i%4], model: `M${i+1}`
     }));
-    results.forEach(p=> p.url = getStoreUrl(p.store, p.title));
+    results.forEach(p=> { p.url = getProductUrl(p.store, p); p.storeUrl = getStoreUrl(p.store, p.title); });
   } else if (q.length < 2){
     results = [];
   } else {
     results = Array.from({length:8}, (_,i)=> ({
       id:500+i, title: `${query} - عرض ${i+1} من ${Object.values(STORES)[i%11].ar}`, store: Object.keys(STORES)[i%11], price: 1200 + i*320, originalPrice: 1500+i*320, discount: 10+i, image: "white", model: query
     }));
-    results.forEach(p=> p.url = getStoreUrl(p.store, p.title));
+    results.forEach(p=> { p.url = getProductUrl(p.store, p); p.storeUrl = getStoreUrl(p.store, p.title); });
   }
   return results;
 }
@@ -203,8 +261,9 @@ app.get('/api/search', (req,res)=>{
   setTimeout(()=>{
     const storesWithHits = new Set(data.map(p=>p.store)).size;
     const avg = data.length ? Math.round(data.reduce((a,b)=>a+b.price,0)/data.length) : 0;
-    const min = data.length ? Math.min(...data.map(p=>p.price)) : 0;
-    const minStore = data.length ? data.reduce((a,b)=> a.price < b.price ? a : b).store : null;
+    const available = data.filter(p=> p.availability);
+    const min = available.length ? Math.min(...available.map(p=>p.price)) : 0;
+    const minStore = available.length ? available.reduce((a,b)=> a.price < b.price ? a : b).store : null;
     res.json({
       query: q,
       demoMode: demo,
