@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /api/
-Sitemap: https://price-hunter-egypt.onrender.com/sitemap.xml
