@@ -1,4 +1,22 @@
-# История изменений
+## Ревизия 2026-11-03 (ثالثة) — `npm start` للـ Render وأي Node-استضافة
+
+**المشكلة:** فشل النشر على Render بالخطأ `npm error Missing script: "start"`.
+المشروع لم يكن فيه سكربت `start` إطلاقًا (كان `dev` و`build` و`preview` و`test` فقط)،
+وRender يشغّل `npm start` افتراضيًا، فالحاوية كانت تخرج فورًا.
+
+**الحل:**
+
+- سكربت `scripts/serve.js` — سيرفر ملفات ثابتة بدون أي اعتمادية خارجية: يخدم `dist`،
+  يقرأ `PORT`، يستمع على `0.0.0.0`، يمنع الخروج من مجلد البناء، ويستخدم types MIME
+  صحيحة + كاش للملفات المسمّاة بالهاش + fallback لصفحة واحدة (SPA).
+- سكربت جديد `npm start` (و`npm serve` كاختصار) في `package.json`.
+- الإعدادات المقترحة لـ Render: Build `npm ci --include=dev && npm run build`،
+  Start `npm start`، Node `22`، Health Check `/`.
+- `engines.node >= 20.19.0` موجود في `package.json`، وRender يحترمه ويختار Node المناسب.
+
+**فحص:** البناء + التشغيل محليًا: `/` و`/data/catalog.json` و`/assets/*` يرجعون 200
+بـ types صحيحة، والمسار غير الموجود يرجع `index.html`، ومحاولة الخروج من مجلد البناء
+ترجع الصفحة الرئيسية بدون تسريب أي ملف.
 
 ## Ревизия 2026-11-03 (вторая) — тема, водяной знак, Email/WhatsApp, исправление поиска
 

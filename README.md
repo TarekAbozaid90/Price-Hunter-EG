@@ -66,7 +66,7 @@ python -m unittest discover -s tests -v
 python scripts/check_public.py
 npm test
 npm run build
-npm run preview
+npm start
 ```
 
 Тема и водяной знак лежат в `src/assets/bg-tech.jpg` и `src/style.css`; картинка
@@ -185,6 +185,30 @@ python -m collector.runner test-whatsapp
 В Settings → Actions → General → Workflow permissions разрешите запись содержимого для своего сборщика. `Collect prices` использует `contents: write`; тесты и публикация — read. Не копируйте секреты в `config/monitor.json`, `VITE_*`, JSON или исходники.
 
 Workflow `Test Telegram` запускается отдельно через Actions → Run workflow и подтверждает доставку теста. Отсутствие Secrets не мешает сбору: уведомления отключаются с понятным сообщением.
+
+## 4.1. Запуск на Render или любом Node-хостинге
+
+В проекте есть готовый `npm start`: он запускает `scripts/serve.js` — маленький
+статический сервер без зависимостей, который отдаёт собранный `dist`, слушает
+`0.0.0.0:$PORT` и не отдаёт ничего за пределами папки сборки.
+
+На Render (или Railway, Fly, любом Node-хостинге) задайте:
+
+- **Build Command:** `npm ci --include=dev && npm run build`
+- **Start Command:** `npm start`
+- **Node version:** `22` (в `package.json` есть `engines: node >= 20.19.0`)
+- **Health Check Path:** `/`
+
+`npm start` без предварительной сборки отдаст ошибку «нет dist» — поэтому порядок
+сборки и запуска важен. Интерфейс собирается в статические файлы: серверная часть,
+Node-процесс и база данных не нужны.
+
+Проверка локально, как это сделает хостинг:
+
+```text
+npm run build
+npm start
+```
 
 ## 5. Сайт и расписание
 
