@@ -9,12 +9,20 @@ const STORES = [
   {id:'etisal',    ar:'اتصال ستور', en:'Etisal Store', color:'#10B981', domain:'etisalstore.com', live:true},
   {id:'miami',     ar:'ميامي سنترز', en:'Miami Centers', color:'#FB923C', domain:'miamicenters.com', live:true},
   {id:'dubai',     ar:'دبي فون',   en:'Dubai Phone',  color:'#06B6D4', domain:'dubaiphone.net', live:true},
+  {id:'imedia',    ar:'آي ميديا',  en:'iMedia Stores', color:'#3B82F6', domain:'imediastores.com', live:true},
+  {id:'annoshka',  ar:'أنوشكا',    en:'Annoshka',      color:'#F472B6', domain:'annoshka.com', live:true},
+  {id:'shift',     ar:'شِفت ستور', en:'Shift Store',    color:'#6366F1', domain:'shiftstore-eg.com', live:true},
+  {id:'xprs',      ar:'XPRS',      en:'XPRS',          color:'#0EA5E9', domain:'myxprs.com', live:true},
+  {id:'kimo',      ar:'كيمو ستور', en:'Kimo Store',    color:'#F59E0B', domain:'kimostore.net', live:true},
+  {id:'iq',        ar:'آي كيو موبايلز', en:'IQ Mobiles', color:'#84CC16', domain:'iq-mobiles.com', live:true},
+  {id:'shennawy',  ar:'الشناوي',   en:'El Shennawy',   color:'#A855F7', domain:'elshennawy.com', live:true},
   {id:'jumia',     ar:'جوميا',     en:'Jumia',        color:'#FF6B00', domain:'jumia.com.eg', live:false},
   {id:'noon',      ar:'نون',       en:'Noon',         color:'#FDE047', domain:'noon.com', live:false},
   {id:'amazon',    ar:'أمازون مصر', en:'Amazon Egypt', color:'#F59E0B', domain:'amazon.eg', live:false},
   {id:'b2',        ar:'2B',        en:'2B',           color:'#FACC15', domain:'2b.com.eg', live:false},
   {id:'btech',     ar:'بي تك',     en:'B.TECH',       color:'#DC2626', domain:'btech.com', live:false},
   {id:'raneen',    ar:'رنين',      en:'Raneen',       color:'#A78BFA', domain:'raneen.com', live:false},
+  {id:'kaza',      ar:'كازا',      en:'Kaza',          color:'#E11D48', domain:'kaza.com.eg', live:false},
 ];
 const CATS = [
   {id:'all',    ar:'جميع',          en:'All',             icon:'✨', q:''},
@@ -65,6 +73,7 @@ const i18n = {
     sub_saved:'تم التسجيل ✅ هتبعتلك الأسعار الجديدة قريبًا',
     sub_error:'حصل خطأ — جرب تاني',
     live_badge:'سعر حي',
+    grid_view:'عرض شبكي', list_view:'عرض قائمة',
   },
   en: {
     brand_ar:'Price Hunter Egypt', brand_en:'Price Hunter Egypt',
@@ -104,10 +113,12 @@ const i18n = {
     sub_saved:'Registered ✅ you will receive the new prices soon',
     sub_error:'Something went wrong — try again',
     live_badge:'Live price',
+    grid_view:'Grid view', list_view:'List view',
   }
 };
 let lang = localStorage.getItem('ph_lang') || 'ar';
 let currentData = null, filteredData = null, currentFilter = 'all', currentSort = 'cheapest';
+let viewMode = localStorage.getItem('ph_view') || 'grid'; // grid | list
 const els = {
   searchInput: document.getElementById('searchInput'),
   searchBtn: document.getElementById('searchBtn'),
@@ -271,12 +282,30 @@ async function submitAlert(){
   }catch(e){ toast(i18n[lang].sub_error); }
 }
 
+/* ================= View mode (grid / list) ================= */
+function applyViewMode(){
+  if(!els.productList) return;
+  els.productList.classList.toggle('grid-view', viewMode==='grid');
+  const bg = document.getElementById('btnViewGrid'), bl = document.getElementById('btnViewList');
+  if(bg){ bg.classList.toggle('primary', viewMode==='grid'); bg.setAttribute('aria-pressed', viewMode==='grid'); }
+  if(bl){ bl.classList.toggle('primary', viewMode==='list'); bl.setAttribute('aria-pressed', viewMode==='list'); }
+}
+function setViewMode(mode){
+  if(viewMode===mode) return;
+  viewMode = mode;
+  try{ localStorage.setItem('ph_view', mode); }catch(e){}
+  applyViewMode();
+}
+
 /* ================= Init & rendering ================= */
 function init(){
   buildWatermark();
   const pw = document.createElement('div'); pw.className='print-wm'; pw.textContent='© Tarek Abozaid — Price Hunter Egypt';
   document.body.appendChild(pw);
   renderStores(); renderCats(); bindEvents(); applyLang();
+  document.getElementById('btnViewGrid')?.addEventListener('click', ()=> setViewMode('grid'));
+  document.getElementById('btnViewList')?.addEventListener('click', ()=> setViewMode('list'));
+  applyViewMode();
   ['subscribeTopBtn','subscribeHeroBtn','subscribeFooterBtn','subscribeFloat'].forEach(id=>{
     document.getElementById(id)?.addEventListener('click', ()=> openSubscribeModal(currentData?.query));
   });

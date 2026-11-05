@@ -92,3 +92,27 @@ price-hunter-egypt/
 
 ## 👨‍💻 المالك
 **Tarek Abozaid** — 2026 © All Rights Reserved
+
+---
+
+## 📊 Admin Panel (Visitor Analytics)
+
+Panel URL: `/admin` — e.g. `https://price-hunter-egypt.onrender.com/admin`
+
+- **Login**: `ADMIN_PASSWORD` env var (default `admin123`) — set it on Render → Environment.
+- Tracks **every pageview** (IP, country, city, device, browser, OS, referrer) and **every search** (query + results).
+- Subscribers (**emails + WhatsApp numbers**) and price alerts are listed with export (CSV / JSON) and copy buttons.
+- Dashboard: stat cards, 14-day visits/searches chart, devices donut, countries/top-searches/browsers bars, and full tables.
+
+### Live stores (server-side real prices)
+dream2000 · vontx · etisal · miami (miamicenters.com) · dubai (dubaiphone.net) ·
+imedia (imediastores.com) · annoshka (annoshka.com) · shift (shiftstore-eg.com) ·
+xprs (myxprs.com) · kimo (kimostore.net) · iq (iq-mobiles.com) · shennawy (elshennawy.com)
+
+### Deep-link stores (search buttons)
+jumia · noon · amazon.eg · 2b · btech · raneen · kaza (kaza.com.eg)
+
+### Front-end features
+- Light white + baby-blue / sky theme
+- Grid view / List view toggle (saved per visitor)
+- Arabic / English toggle
